@@ -1,0 +1,28 @@
+---
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: {{ HOST_IP }}
+  bindPort: 6443
+---
+apiServer:
+  extraArgs:
+    advertise-address: {{ k8s_controlPlane_Endpoint }} #10.99.120.79
+    service-cluster-ip-range: {{ k8s_service_subnet }}  #10.96.0.0/12
+apiVersion: kubeadm.k8s.io/v1beta3
+certificatesDir: /etc/kubernetes/pki
+controllerManager:
+  extraArgs:
+    bind-address: 0.0.0.0
+    cluster-cidr: {{ k8s_pod_subnet }} #10.244.0.0/22
+    node-cidr-mask-size: "25"
+    service-cluster-ip-range: {{ k8s_service_subnet }}  #10.96.0.0/12
+dns: {}
+
+kind: ClusterConfiguration
+kubernetesVersion: {{ k8s_version_short }} #v1.24.0
+controlPlaneEndpoint: {{ k8s_controlPlane_Endpoint }}:6443
+networking:
+  podSubnet: {{ k8s_pod_subnet }} # 10.244.0.0/22
+  serviceSubnet: {{ k8s_service_subnet }} #10.96.0.0/12
+scheduler: {}

@@ -1,0 +1,107 @@
+---
+- hosts: masters[0]
+  gather_facts: true
+  become: yes
+  vars_files:
+    - ./vars/base_vars.yaml
+  tasks:
+    - name: create folder for  Container Storage Plug-in
+      file:
+        path: "/home/{{ os_admin_username }}/k8s_addons/vsphere_csi"
+        state: directory
+        mode: '0644'
+
+# PART-II - Install vSphere  Container Storage Plug-in
+    # Before installing the vSphere Container Storage Plug-in in your generic Kubernetes environment, create the vmware-system-csi namespace.
+    - name: create the vmware-system-csi namespace
+      kubernetes.core.k8s:
+        kubeconfig: "/etc/kubernetes/admin.conf"
+        name: vmware-system-csi
+        api_version: v1
+        kind: Namespace
+        state: present
+  
+  # Before installing the vSphere Container Storage Plug-in in your generic Kubernetes environment, make sure that you 
+  # taint the control plane node with the node-role.kubernetes.io/control-plane=:NoSchedule parameter.
+    - name: get all master nodes list
+      shell: >
+        kubectl --kubeconfig=/etc/kubernetes/admin.conf 
+        get nodes -l node-role.kubernetes.io/control-plane 
+        -o=custom-columns="name:.metadata.name"
+      register: k8s_master_nodes
+      tags: get_master_nodes_list
+#
+    - name: show master nodes list
+      debug:
+        msg: "{{ item }}"
+      loop: "{{ k8s_master_nodes.stdout_lines[1:]|list }}"
+      tags: get_master_nodes_list
+
+    - name: Tainting all nodes with "node-role.kubernetes.io/control-plane=:NoSchedule"
+      kubernetes.core.k8s_taint:
+        kubeconfig: "/etc/kubernetes/admin.conf"
+        state: present
+        name: "{{ item }}"
+        taints:
+          - effect: NoSchedule
+            key: "node-role.kubernetes.io/control-plane"
+            value: ""
+      loop: "{{ k8s_master_nodes.stdout_lines[1:]|list }}" #
+      tags: tainting
+
+
+  # Create a Kubernetes Secret for vSphere Container Storage Plug-in
+      # create vsphere-cpi secret from cpi_secret.yaml.j2 template
+    - name: create vsphere-csi secret config file from  template
+      template:
+        src: ./templates/csi-vsphere.conf.j2
+        dest: "/home/{{ os_admin_username }}/k8s_addons/vsphere_csi/csi-vsphere.conf"
+        mode: '0644'
+    - name: create vsphere-csi secret manifest from config file
+      shell: >
+        kubectl create secret generic vsphere-config-secret 
+        --from-file=/home/"{{ os_admin_username }}"/k8s_addons/vsphere_csi/csi-vsphere.conf
+        --namespace=vmware-system-csi 
+        --dry-run=client -o yaml > /home/"{{ os_admin_username }}"/k8s_addons/vsphere_csi/csi_secret.yaml
+        
+
+  # download vSphere Container Storage Plug-in manifest 
+    - name: Download vsphere-cloud-controller-manager.yaml manifest
+      ansible.builtin.get_url:
+        url:  "{{ vsphere_csi_manifest_url}}"
+        dest: "/home/{{ os_admin_username }}/k8s_addons/vsphere_csi/vsphere-csi-driver.yaml"
+        mode: '0644'
+      tags: CSI_manifest_download
+
+  # apply vSphere Container Storage Plug-in manifest
+    - name: Deploy vSphere Container Storage Plug-in.
+      kubernetes.core.k8s:
+        kubeconfig: "/etc/kubernetes/admin.conf"
+        state: present
+        src: "{{ item }}"
+      loop:
+        - "/home/{{ os_admin_username }}/k8s_addons/vsphere_csi/csi_secret.yaml"
+        - "/home/{{ os_admin_username }}/k8s_addons/vsphere_csi/vsphere-csi-driver.yaml"
+      tags: apply_csi_manifests
+  
+  # create storage class manifest
+    - name: create storage class manifest from  template
+      template:
+        src: ./templates/storage_class.yaml.j2
+        dest: "/home/{{ os_admin_username }}/k8s_addons/vsphere_csi/storage_class.yaml"
+        mode: '0644'
+    - name: cleanup local files
+      file:
+        path: "/home/{{ os_admin_username }}/k8s_addons/vsphere_csi/"
+        state: absent
+        
+
+
+  # Verify that the vSphere Container Storage Plug-in has been successfully deployed.
+  # kubectl get deployment --namespace=vmware-system-csi
+
+  # Verify that the vSphere Container Storage Plug-in has been registered with Kubernetes.
+  # kubectl describe csidrivers
+
+  #Verify that the CSINodes have been created.
+  #kubectl get CSINode

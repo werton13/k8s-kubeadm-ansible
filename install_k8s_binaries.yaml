@@ -1,0 +1,51 @@
+---
+  
+- hosts: masters:workers
+  gather_facts: true
+  become: yes
+  vars_files:
+    - ./vars/base_vars.yaml
+  
+  tasks:
+#
+    - name: Download the Google Cloud public signing key
+      ansible.builtin.get_url:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        dest: /etc/apt/keyrings/kubernetes-archive-keyring.gpg 
+        mode: '0644'
+      tags: repoadd
+    
+    
+    #
+    - name: Add the Kubernetes apt repository
+      ansible.builtin.apt_repository:
+        repo: deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main
+        state: present
+        filename: kubernetes
+        update_cache: true
+      tags:
+        - repoadd
+    
+    #echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+    
+    - name: update apt
+      ansible.builtin.apt:
+        update_cache: yes
+        name: "{{ item }}"
+        state: present
+        allow_downgrade: yes
+      loop:
+        - kubectl={{ k8s_ver }}
+        - kubeadm={{ k8s_ver }}
+        - kubelet={{ k8s_ver }}
+        
+    
+    - name: Hold kubeadm kubelet and kubectl versions - prevent auto updated and removes
+      ansible.builtin.dpkg_selections:
+        name: "{{ item }}"
+        selection: hold
+      loop:
+        - kubelet
+        - kubeadm
+        - kubectl
+    

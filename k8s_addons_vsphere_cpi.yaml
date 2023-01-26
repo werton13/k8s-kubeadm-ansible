@@ -1,0 +1,87 @@
+---
+- hosts: masters[0]
+  gather_facts: true
+  become: yes
+  vars_files:
+    - ./vars/base_vars.yaml
+  tasks:
+    - name: create folder for vSphere Cloud Provider Interface
+      file:
+        path: "/home/{{ os_admin_username }}/k8s_addons/vsphere_cpi"
+        state: directory
+        mode: '0644'
+
+# PART-I - Install vSphere Cloud Provider Interface
+
+    #verify that all nodes, including the control plane nodes, are tainted with
+    # node.cloudprovider.kubernetes.io/uninitialized=true:NoSchedule.
+    # kubectl taint node <node-name> node.cloudprovider.kubernetes.io/uninitialized=true:NoSchedule
+    - name: get all nodes list
+      shell:
+        kubectl get nodes --kubeconfig=/etc/kubernetes/admin.conf -o=custom-columns="name:.metadata.name"
+      register: k8s_all_nodes
+      tags: get_node
+
+    - name: show nodes 
+      debug:
+        msg: "{{ item }}"
+      loop: "{{ k8s_all_nodes.stdout_lines[1:]|list }}"
+      tags: get_node
+
+
+    - name: Tainting all nodes
+      kubernetes.core.k8s_taint:
+        state: present
+        name: "{{ item }}"
+        kubeconfig: "/etc/kubernetes/admin.conf"
+        taints:
+        - effect: NoSchedule
+          key: "node.cloudprovider.kubernetes.io/uninitialized"
+          value: "true"
+      loop: "{{ k8s_all_nodes.stdout_lines[1:]|list }}" #
+      tags: tainting
+         
+    # download vsphere-cloud-controller-manager.yaml manifest for specified kubernetes version
+    - name: Download vsphere-cloud-controller-manager.yaml manifest
+      ansible.builtin.get_url:
+        url:  "{{ vsphere_cpi_url }}"
+        dest: "/home/{{ os_admin_username }}/k8s_addons/vsphere-cpi.yaml"
+        mode: '0644'
+      tags: CPI_manifest_download
+  
+    # remove secret and configmap sections from downloaded manifest and save output to
+     # yq '. | select(.kind != "Secret" and .kind != "ConfigMap")'  vsphereccm.yaml -y
+    - name: remove secret and configmap sections from downloaded manifest
+      shell: >
+        yq '. | select(.kind != "Secret" and .kind != "ConfigMap")' 
+        /home/"{{ os_admin_username }}"/k8s_addons/vsphere-cpi.yaml -y >
+        /home/"{{ os_admin_username }}"/k8s_addons/vsphere_cpi/vsphere_cpi_trunk.yaml
+        
+    # create vsphere-cpi secret from cpi_secret.yaml.j2 template
+    - name: create vsphere-cpi secret from  template
+      template:
+        src: ./templates/cpi_secret.yaml.j2
+        dest: "/home/{{ os_admin_username }}/k8s_addons/vsphere_cpi/cpi_secret.yaml"
+        mode: '0644'
+    # create vsphere-cpi configmap from cpi_configmap.yaml.j2 template
+    - name: create vsphere-cpi secreconfigmap from  template
+      template:
+        src: ./templates/cpi_configmap.yaml.j2
+        dest: "/home/{{ os_admin_username }}/k8s_addons/vsphere_cpi/cpi_configmap.yaml"
+        mode: '0644'     
+ 
+    - name: Apply all manifests in a given folder
+      kubernetes.core.k8s:
+        kubeconfig: "/etc/kubernetes/admin.conf"
+        state: present
+        src: "{{ item }}"
+      loop:
+        - "/home/{{ os_admin_username }}/k8s_addons/vsphere_cpi/cpi_secret.yaml"
+        - "/home/{{ os_admin_username }}/k8s_addons/vsphere_cpi/cpi_configmap.yaml"
+        - "/home/{{ os_admin_username }}/k8s_addons/vsphere_cpi/vsphere_cpi_trunk.yaml"
+      tags: apply_cpi_manifests
+
+    - name: cleanup local files
+      file:
+        path: "/home/{{ os_admin_username }}/k8s_addons/vsphere_cpi/"
+        state: absent

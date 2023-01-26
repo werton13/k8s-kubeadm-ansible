@@ -1,0 +1,7 @@
+
+- import_playbook: ./prepare_hosts.yaml
+- import_playbook: ./install_k8s_binaries.yaml
+- import_playbook: ./bootstrap_k8s_cluster.yaml
+- import_playbook: ./k8s_addons_calico.yaml
+- import_playbook: ./k8s_addons_vsphere_cpi.yaml
+- import_playbook: ./k8s_addons_vsphere_csi.yaml

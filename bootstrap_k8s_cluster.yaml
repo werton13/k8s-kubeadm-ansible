@@ -1,0 +1,69 @@
+---
+  
+- hosts: masters[0]
+  gather_facts: true
+  become: yes
+  vars_files:
+    - ./vars/base_vars.yaml
+  tasks:
+    - name: kubeadm reset
+      shell: kubeadm reset -f
+    - name: clean kubeadm artifacts
+      ansible.builtin.file:
+        path: "{{  item }}"
+        state: absent
+      loop:
+        - /etc/cni/net.d/
+        - /etc/kubernetes/tmp/
+    - name: copy kubeadm init config
+      template:
+        src: ./templates/cluster_init_config.yaml.j2
+        dest: /home/{{ os_admin_username }}/cluster_init_config.yaml
+        mode: 0644
+
+    - name: kubernetes cluster bootstrap
+      shell: |
+        kubeadm init --config "/home/{{ os_admin_username }}/cluster_init_config.yaml" --upload-certs
+      register: kubeadm_init_out
+
+    - name: cut output
+      shell: |
+        echo "{{ kubeadm_init_out.stdout }}" | tail -n 10
+      register: tail_output
+
+    - name: show tail_output
+      debug:
+        msg: "{{ tail_output.stdout_lines }}"
+
+    - name: extract controlplane join command
+      set_fact:
+        cp_join_cmd: "{{ tail_output.stdout_lines[1] | replace('\t', '')  }}"
+#      register: cp_join_cmd
+
+    - name: show cp_join_cmd
+      debug:
+        msg: "{{ cp_join_cmd }}"
+    
+    - name: extract workers join command
+      set_fact:
+        worker_join_cmd: "{{ tail_output.stdout_lines[9] | replace('\t', '')  }}"
+
+    - name: show worker_join_cmd
+      debug:
+        msg: "{{ worker_join_cmd }}"
+    
+
+
+
+    - name: join additional master nodes
+      shell: "{{ cp_join_cmd }}"
+      delegate_to: "{{ item }}"
+      loop: "{{ groups.masters[1:] }}" # all masters exept first
+      tags: join_second_master
+
+    - name: join workers
+      shell: "{{ worker_join_cmd }}"
+      delegate_to: "{{ item }}"
+      loop: "{{ groups.workers }}" # all workers
+      tags: join_masters
+

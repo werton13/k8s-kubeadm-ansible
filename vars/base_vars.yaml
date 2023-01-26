@@ -1,0 +1,28 @@
+
+os_admin_username: vmadmin
+k8s_ver: "1.24.9-00"
+
+os_nic1_name: ens192
+k8s_nic_name: "ansible_{{ os_nic1_name }}"
+HOST_IP: "{{ hostvars[inventory_hostname][k8s_nic_name].ipv4.address }}"
+
+k8s_controlPlane_Endpoint: #first API server or LB address
+k8s_service_subnet: 10.96.0.0/12
+k8s_pod_subnet: 10.244.0.0/22
+k8s_version_short: v1.24.0
+k8s_cluster_id: mycluster #The unique cluster identifier. DISPLAYED IN VSPHERE CONSOLE(CONTAINER VOLUMES DETAILS)
+calico_version: "v3.24.5"
+calico_network_cidr_blocksize: 26
+calico_ippools_cidr: "{{ k8s_pod_subnet }}"
+vsphere_cpi_url:  "https://raw.githubusercontent.com/kubernetes/cloud-provider-vsphere/release-{{ k8s_version_short[1:-2] }}/releases/v{{ k8s_version_short[1:-2] }}/vsphere-cloud-controller-manager.yaml"
+
+vsphere_host_ip: ""
+vsphere_server: ""   # vsphere host FQDN
+vsphere_user: ""     # vsphere user with permissions to create resources in vsphere
+vsphere_password: "" # vpshere user password 
+dcname: ""           # vsphere datacenter name
+vsphere_csi_driver_version: "v2.7.0" # actual on 2023 January
+vsphere_csi_manifest_url: "https://raw.githubusercontent.com/kubernetes-sigs/vsphere-csi-driver/{{ vsphere_csi_driver_version }}/manifests/vanilla/vsphere-csi-driver.yaml"
+
+sc_storage_policy_name: "StoragePolicy01"
+sc_name: # storage class name

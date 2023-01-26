@@ -1,0 +1,179 @@
+---
+  
+- hosts: masters:workers
+  gather_facts: true
+  become: yes
+  vars_files:
+    - ./vars/base_vars.yaml
+
+  tasks:
+    
+    - name: Download Docker’s official GPG key
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/dockergpg
+        mode: '0644'
+      tags: repodocker
+    
+    - name: checkdocker docker.gpg key already exist locally
+      stat:
+        path: /etc/apt/keyrings/docker.gpg
+      register: dockergpg_check
+
+    - name: dearmor docker gpg
+      shell: |
+        cat /etc/apt/keyrings/dockergpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+      tags: repodocker
+      when: not dockergpg_check.stat.exists
+    #
+    - name: Add the docker apt repository - for containerd.io
+      ansible.builtin.apt_repository:
+        repo: deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable
+        state: present
+        filename: docker
+        update_cache: true
+      tags:
+        - repodocker
+
+    - name: update apt
+      apt:
+        update_cache: yes
+        name: "{{ item }}"
+        state: present
+      loop:
+        - sshpass
+        - whois       # required for 'mkpassword' command
+        - python-pip  # required to install kubernetes python package
+        - python3-pip # required to install kubernetes python package
+        - containerd.io
+        - apt-transport-https # required for kubeadm
+        - ca-certificates     # required for kubeadm
+        - curl                # required for kubeadm
+        - jq
+
+
+    - name: Install kubernetes python package
+      ansible.builtin.pip:
+        name: "{{ item }}"
+      loop:
+        - kubernetes
+        - yq
+#    - name: update hostnames to match inventory hostnames
+#      ansible.builtin.hostname:
+#        name: "{{ inventory_hostname }}"
+
+#    - name: update '/etc/hosts' file with a new hostname
+#      lineinfile:
+#        path: "/etc/hosts"
+#        regexp: '^127\.0\.0\.1'
+#        line: "127.0.0.1 {{ inventory_hostname }}"
+
+#    - name: add records for each inventory hosts in local hosts file
+#      lineinfile:
+#        path: "/etc/hosts"
+#        line: "{{ hostvars[item][k8s_nic_name].ipv4.address }} {{ item }}"
+#      loop: "{{  groups.masters | list + groups.workers | list}}"
+#      when: item is not search( inventory_hostname )  
+
+    # для разрешения имен всех узлов кластера - добавить в /etc/hosts каждого сервера:
+    # 10.99.120.79    k8s-lb
+    # 10.99.120.81    k8s-m-0
+    # 10.99.120.82    k8s-m-1
+    # 10.99.120.86    k8s-w-0
+    # 10.99.120.87    k8s-w-1
+    # 10.99.120.88    k8s-w-2
+    
+    - name: populate /etc/hosts
+      shell:
+        cat "/home/{{ os_admin_username }}/hosts_to_copy" >> /etc/hosts
+    # отключить своп:
+    - name: show swapon state
+      debug:
+        msg: "SWAP is enabled, will try to disable it"
+    
+    - name: disable swapon
+      shell: "swapoff -a"
+      register: SWAP_STATE
+       
+    - name: edit fstab to disabe swap on startup
+      lineinfile:
+        path: /etc/fstab
+        regexp: '^/swap'
+        line: '#/swap.img       none    swap    sw      0       0'
+    
+    - name: show swapoff result
+      debug:
+        msg: "swap on {{ inventory_hostname }} is disabled"
+
+    - name: create required  directories
+      file: 
+        path: "{{ item }}"
+        state: directory
+        mode: 0700
+      loop:
+        - /etc/containerd
+
+    - name: copy additional config for loaded modules
+      copy:
+        src: "./files/load.d_k8s.conf"
+        dest: "/etc/modules-load.d/k8s.conf"
+    - name: copy additional kernel params config file
+      copy:
+        src: "./files/sysctl.d_k8s.conf"
+        dest: "/etc/sysctl.d/k8s.conf"
+    - name: copy containerd config file
+      copy:
+        src: "./files/containerd_config.toml"
+        dest: "/etc/containerd/config.toml"
+    
+    - name:  apply kernel parameters changes
+      shell: |
+        modprobe overlay
+        modprobe br_netfilter
+        sysctl --system
+    
+    - name: restart containerd
+      systemd:
+        state: restarted
+        daemon_reload: yes
+        name: "{{ item }}"
+      loop:
+        - containerd
+
+
+#    - name: Reboot host and wait for it to restart
+#      reboot:
+#        msg: "Reboot initiated by Ansible"
+#        connect_timeout: 5
+#        reboot_timeout: 600
+#        pre_reboot_delay: 0
+#        post_reboot_delay: 30
+#        test_command: whoami
+
+#- hosts: masters[0]
+#  gather_facts: false
+#  become: yes
+#  vars_files:
+#    - ../shared_vars/base_vars.yaml
+#    - ../shared_vars/cert_vars.yaml
+#  tasks:
+
+#    - name: create password hash from a cleartext variable
+#      shell:
+#        "mkpasswd --method=SHA-512 --rounds=4096 {{ os_admin_password }}"
+#      register: SHA512_PWD
+#      tags: password
+
+#   - name: create admin user for K8s cluster
+#     user:
+#       name: "{{ os_admin_username }}"
+#       comment: "K8s cluster admin"
+#       uid: 1040
+#       shell: /bin/bash
+#       groups: adm,cdrom,sudo,dip,plugdev,lxd
+#       append: yes
+#       update_password: always
+#       # mkpasswd --method=SHA-512 --stdin
+#       password: "{{ SHA512_PWD.stdout }}"
+#     tags: password
+...
