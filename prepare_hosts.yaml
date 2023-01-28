@@ -83,9 +83,9 @@
     # 10.99.120.87    k8s-w-1
     # 10.99.120.88    k8s-w-2
     
-    - name: populate /etc/hosts
-      shell:
-        cat "/home/{{ os_admin_username }}/hosts_to_copy" >> /etc/hosts
+#    - name: populate /etc/hosts
+#      shell:
+#        cat "/home/{{ os_admin_username }}/hosts_to_copy" >> /etc/hosts
     # отключить своп:
     - name: show swapon state
       debug:
