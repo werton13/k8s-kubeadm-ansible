@@ -1,0 +1,19 @@
+---
+# how to check  required packages installed on every host
+- hosts: masters[1:]
+  gather_facts: true
+  become: yes
+  vars_files:
+    - ./vars/base_vars.yaml
+  
+  tasks:
+    - name: check k8s binaries was installed
+      stat:
+        path: "/usr/bin/{{ item }}"
+      loop:
+        - 'kubelet'
+        - 'kubeadm'
+      register: k8s_binfile_state
+      until: k8s_binfile_state.stat.exists == true
+      retries: 100
+      delay: 10

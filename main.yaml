@@ -1,6 +1,8 @@
 
 - import_playbook: ./prepare_hosts.yaml
 - import_playbook: ./install_k8s_binaries.yaml
+# не приступать к развертыванию кластера до получения статусу готовности всех узлов
+- import_playbook: ./check_k8s_binaries_install_state.yaml
 - import_playbook: ./bootstrap_k8s_cluster.yaml
 - import_playbook: ./k8s_addons_calico.yaml
 - import_playbook: ./k8s_addons_vsphere_cpi.yaml
