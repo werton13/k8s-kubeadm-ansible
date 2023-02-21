@@ -5,5 +5,5 @@
 - import_playbook: ./check_k8s_binaries_install_state.yaml
 - import_playbook: ./bootstrap_k8s_cluster.yaml
 - import_playbook: ./k8s_addons_calico.yaml
-- import_playbook: ./k8s_addons_vsphere_cpi.yaml
-- import_playbook: ./k8s_addons_vsphere_csi.yaml
+#- import_playbook: ./k8s_addons_vsphere_cpi.yaml
+#- import_playbook: ./k8s_addons_vsphere_csi.yaml
