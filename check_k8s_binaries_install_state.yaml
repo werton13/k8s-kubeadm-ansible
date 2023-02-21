@@ -1,6 +1,6 @@
 ---
 # how to check  required packages installed on every host
-- hosts: masters[1:]
+- hosts: masters[1:]:workers
   gather_facts: true
   become: yes
   vars_files:
