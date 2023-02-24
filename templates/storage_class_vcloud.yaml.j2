@@ -1,0 +1,13 @@
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+  name: "{{ sc_name }}"
+provisioner: named-disk.csi.cloud-director.vmware.com
+reclaimPolicy: Delete
+parameters:
+  storageProfile: "{{ sc_storage_policy_name }}"
+  filesystem: "ext4"
+---

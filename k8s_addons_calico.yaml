@@ -18,6 +18,13 @@
         mode: '0644'
       tags: calico
 
+    - name: Download calicoctl
+      ansible.builtin.get_url:
+        url: "https://github.com/projectcalico/calico/releases/download/{{ calico_version }}/calicoctl-linux-amd64/manif"
+        dest: "/usr/local/bin"
+        mode: '0755'
+      tags: calicoctl
+
     - name: create Calico configuration manifest
       template:
         src: ./templates/calico_config.yaml.j2

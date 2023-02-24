@@ -8,6 +8,7 @@
   tasks:
     - name: kubeadm reset
       shell: kubeadm reset -f
+
     - name: clean kubeadm artifacts
       ansible.builtin.file:
         path: "{{  item }}"
@@ -15,6 +16,7 @@
       loop:
         - /etc/cni/net.d/
         - /etc/kubernetes/tmp/
+
     - name: copy kubeadm init config
       template:
         src: ./templates/cluster_init_config.yaml.j2
@@ -52,13 +54,11 @@
       debug:
         msg: "{{ worker_join_cmd }}"
     
-
-
-
-    - name: join additional master nodes
+    - name: join additional master nodes (when masternodes count > 1)
       shell: "{{ cp_join_cmd }}"
       delegate_to: "{{ item }}"
       loop: "{{ groups.masters[1:] }}" # all masters exept first
+      when: "{{ masters_count }}" > 1
       tags: join_second_master
 
     - name: join workers
