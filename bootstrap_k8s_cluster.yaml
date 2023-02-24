@@ -58,7 +58,7 @@
       shell: "{{ cp_join_cmd }}"
       delegate_to: "{{ item }}"
       loop: "{{ groups.masters[1:] }}" # all masters exept first
-      when: "{{ masters_count }}" > 1
+      when: "{{ masters_count }}"  > '1'
       tags: join_second_master
 
     - name: join workers
