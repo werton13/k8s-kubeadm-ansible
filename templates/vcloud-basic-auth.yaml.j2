@@ -4,6 +4,6 @@ metadata:
   name: vcloud-basic-auth
   namespace: kube-system
 data:
-  username: "{{ vcloud_user }}"
-  password: "{{ vcloud_password }}"
+  username: "{{ vcloud_user | b64encode }}"
+  password: "{{ vcloud_password | b64encode }}"
   refreshToken: ""
