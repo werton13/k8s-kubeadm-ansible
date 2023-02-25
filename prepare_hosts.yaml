@@ -7,7 +7,18 @@
     - ./vars/base_vars.yaml
 
   tasks:
+    - name: Wait 300 seconds for port 22 to become open on all nodes and contain "OpenSSH"
+      ansible.builtin.wait_for:
+        port: 22
+        host: '{{ (ansible_ssh_host|default(ansible_host))|default(inventory_hostname) }}'
+        search_regex: OpenSSH
+        delay: 10
+        timeout: 600
+      connection: local
     
+    - name: check availability for log
+      ansible.builtin.ping:
+
     - name: Download Docker’s official GPG key
       ansible.builtin.get_url:
         url: https://download.docker.com/linux/ubuntu/gpg
