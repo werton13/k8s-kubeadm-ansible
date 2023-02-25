@@ -9,7 +9,7 @@ data:
     vcd:
       host: "{{ vcloud_url[:-4] }}"
       org: "{{ vcloud_orgname }}"
-      vdc: "{{ Kub_cluster-VDC }}"
+      vdc: "{{ vcloud_vdc }}"
       vAppName: "{{ vapp_name }}"
     clusterid: "{{ k8s_cluster_id }}"
 immutable: true

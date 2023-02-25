@@ -3,7 +3,7 @@
   gather_facts: true
   become: yes
   vars_files:
-    - ./vars/base_vars.yaml
+    - ../vars/base_vars.yaml
   tasks:
     - name: create folder for  Container Storage Plug-in
       file:

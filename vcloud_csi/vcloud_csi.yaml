@@ -3,7 +3,7 @@
   gather_facts: true
   become: yes
   vars_files:
-    - ./vars/base_vars.yaml
+    - ../vars/base_vars.yaml
   tasks:
     - name: create folder for vcloud CSI
       file:
@@ -24,19 +24,19 @@
       # create vcloud-csi secret from a template
     - name: create vcloud-csi secret manifest file from  template
       template:
-        src: ./templates/vcloud-basic-auth.yaml.j2
+        src: ../templates/vcloud-basic-auth.yaml.j2
         dest: "/home/{{ os_admin_username }}/k8s_addons/vcloud_csi/vcloud-basic-auth.yaml"
         mode: '0644'
 
     - name: create vcloud-csi config manifest file from  template
       template:
-        src: ./templates/vcloud-csi-config.yaml.j2
+        src: ../templates/vcloud-csi-config.yaml.j2
         dest: "/home/{{ os_admin_username }}/k8s_addons/vcloud_csi/vcloud-csi-config.yaml"
         mode: '0644'
 
     - name: copy vcloud-csi manifests to vcloud_csi folder
       copy:
-        src: "./files/{{ item }}"
+        src: "../files/{{ item }}"
         dest: "/home/{{ os_admin_username }}/k8s_addons/vcloud_csi/{{ item }}"
         mode: '0644'
       loop:
@@ -44,11 +44,11 @@
         - csi-controller.yaml
         - csi-driver.yaml
         - csi-node-crs.yaml
-        - csi.node.yaml
+        - csi-node.yaml
   # create storage class manifest
     - name: create storage class manifest from  template
       template:
-        src: ./templates/storage_class_vcloud.yaml.j2
+        src: ../templates/storage_class_vcloud.yaml.j2
         dest: "/home/{{ os_admin_username }}/k8s_addons/vcloud_csi/storage_class.yaml"
         mode: '0644'     
   # apply vSphere Container Storage Plug-in manifests
@@ -58,7 +58,7 @@
         state: present
         definition: "{{ lookup('template', '{{ item }}') }}"
       with_fileglob:
-        - "k8s_addons/vcloud_csi/*.yaml"
+        - "/home/{{ os_admin_username }}/k8s_addons/vcloud_csi/*.yaml"
       tags: apply_csi_manifests
 
     - name: cleanup local files
