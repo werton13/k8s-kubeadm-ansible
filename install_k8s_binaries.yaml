@@ -8,13 +8,23 @@
   
   tasks:
 #
+    #- name: Download the Google Cloud public signing key
+    #  ansible.builtin.get_url:
+    #    url: https://packages.cloud.google.com/apt/doc//apt-key.gpg
+    #    dest: /etc/apt/keyrings/kubernetes-archive-keyring.gpg 
+    #    mode: '0644'
+    #  tags: repoadd
+
     - name: Download the Google Cloud public signing key
       ansible.builtin.get_url:
-        url: https://packages.cloud.google.com/apt/doc//apt-key.gpg
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
         dest: /etc/apt/keyrings/kubernetes-archive-keyring.gpg 
         mode: '0644'
-      tags: repoadd
-    
+      register: dnl_state
+      until: dnl_state.failed == false
+      retries: 100
+      delay: 10
+      tags: repoad        
     
     #
     - name: Add the Kubernetes apt repository
