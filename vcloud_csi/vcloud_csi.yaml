@@ -40,10 +40,8 @@
         dest: "/home/{{ os_admin_username }}/k8s_addons/vcloud_csi/{{ item }}"
         mode: '0644'
       loop:
-        - csi-controller-crs.yaml
         - csi-controller.yaml
         - csi-driver.yaml
-        - csi-node-crs.yaml
         - csi-node.yaml
   # create storage class manifest
     - name: create storage class manifest from  template
