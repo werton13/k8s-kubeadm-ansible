@@ -69,35 +69,8 @@
       loop:
         - kubernetes
         - yq
-#    - name: update hostnames to match inventory hostnames
-#      ansible.builtin.hostname:
-#        name: "{{ inventory_hostname }}"
 
-#    - name: update '/etc/hosts' file with a new hostname
-#      lineinfile:
-#        path: "/etc/hosts"
-#        regexp: '^127\.0\.0\.1'
-#        line: "127.0.0.1 {{ inventory_hostname }}"
-
-#    - name: add records for each inventory hosts in local hosts file
-#      lineinfile:
-#        path: "/etc/hosts"
-#        line: "{{ hostvars[item][k8s_nic_name].ipv4.address }} {{ item }}"
-#      loop: "{{  groups.masters | list + groups.workers | list}}"
-#      when: item is not search( inventory_hostname )  
-
-    # для разрешения имен всех узлов кластера - добавить в /etc/hosts каждого сервера:
-    # 10.99.120.79    k8s-lb
-    # 10.99.120.81    k8s-m-0
-    # 10.99.120.82    k8s-m-1
-    # 10.99.120.86    k8s-w-0
-    # 10.99.120.87    k8s-w-1
-    # 10.99.120.88    k8s-w-2
-    
-#    - name: populate /etc/hosts
-#      shell:
-#        cat "/home/{{ os_admin_username }}/hosts_to_copy" >> /etc/hosts
-    # отключить своп:
+    # swap disable:
     - name: show swapon state
       debug:
         msg: "SWAP is enabled, will try to disable it"
@@ -151,40 +124,4 @@
       loop:
         - containerd
 
-
-#    - name: Reboot host and wait for it to restart
-#      reboot:
-#        msg: "Reboot initiated by Ansible"
-#        connect_timeout: 5
-#        reboot_timeout: 600
-#        pre_reboot_delay: 0
-#        post_reboot_delay: 30
-#        test_command: whoami
-
-#- hosts: masters[0]
-#  gather_facts: false
-#  become: yes
-#  vars_files:
-#    - ../shared_vars/base_vars.yaml
-#    - ../shared_vars/cert_vars.yaml
-#  tasks:
-
-#    - name: create password hash from a cleartext variable
-#      shell:
-#        "mkpasswd --method=SHA-512 --rounds=4096 {{ os_admin_password }}"
-#      register: SHA512_PWD
-#      tags: password
-
-#   - name: create admin user for K8s cluster
-#     user:
-#       name: "{{ os_admin_username }}"
-#       comment: "K8s cluster admin"
-#       uid: 1040
-#       shell: /bin/bash
-#       groups: adm,cdrom,sudo,dip,plugdev,lxd
-#       append: yes
-#       update_password: always
-#       # mkpasswd --method=SHA-512 --stdin
-#       password: "{{ SHA512_PWD.stdout }}"
-#     tags: password
 ...
