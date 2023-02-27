@@ -1,0 +1,43 @@
+---
+- hosts: masters[0]
+  gather_facts: true
+  become: yes
+  vars_files:
+    - ./vars/base_vars.yaml
+  tasks:
+    - name: create folder for  monitoring components manifests
+      file:
+        path: "/home/{{ os_admin_username }}/k8s_addons/monitoring"
+        state: directory
+        mode: '0644'
+    
+    - name: copy Prometheus and Grafana config files
+      copy:
+        src: "./files/{{ item }}"
+        dest: "/home/{{ os_admin_username }}/k8s_addons/monitoring/{{ item }}"
+        mode: '0644'
+      loop:
+        - garafana_values.yaml  # need to combine prometheus values in file
+
+    - name: Deploy latest version of Prometheus chart inside monitoring namespace (and create it)
+      kubernetes.core.helm:
+        name: prometheus
+        chart_ref: prometheus-community/prometheus
+        release_namespace: monitoring
+        create_namespace: true
+        values:
+          server:
+            persistentVolume:
+              size: 10Gi 
+          ingress:
+            enabled: true
+   
+   # Install Grafana
+    - name: Deploy Grafana chart using values files on target
+      kubernetes.core.helm:
+        name: grafana
+        chart_ref: grafana/grafana
+        release_namespace: monitoring
+        values_files:
+          - "/home/{{ os_admin_username }}/k8s_addons/monitoring/grafana_values.yaml"
+...
