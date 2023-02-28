@@ -1,13 +1,18 @@
 ---
+- hosts: masters
+  gather_facts: false
+  become: yes
+  tasks:
+    - name: Install collections and roles from requirements.yml file
+      local_action: command ansible-galaxy install -r requirements.yml -p roles/
+    - include_role:
+        name: geerlingguy.helm
   
 - hosts: masters:workers
   gather_facts: true
   become: yes
   vars_files:
     - ./vars/base_vars.yaml
-  
-  roles:
-    - role: geerlingguy.helm
 
   tasks:
 
@@ -37,8 +42,6 @@
       debug:
         msg: "{{ k8s_ver }}"
       tags: kube_bin_install
-
-    - name: Download 
 
     - name: update apt
       ansible.builtin.apt:
