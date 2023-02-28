@@ -59,8 +59,4 @@
         - "/home/{{ os_admin_username }}/k8s_addons/vcloud_csi/*.yaml"
       tags: apply_csi_manifests
 
-    - name: cleanup local files
-      file:
-        path: "/home/{{ os_admin_username }}/k8s_addons/vcloud_csi/"
-        state: absent
         

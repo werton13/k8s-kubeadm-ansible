@@ -17,7 +17,7 @@
         dest: "/home/{{ os_admin_username }}/k8s_addons/monitoring/{{ item }}"
         mode: '0644'
       loop:
-        - garafana_values.yaml  # need to combine prometheus values in file
+        - grafana_values.yaml  # need to combine prometheus values in file
 
     - name: Deploy latest version of Prometheus chart inside monitoring namespace (and create it)
       kubernetes.core.helm:

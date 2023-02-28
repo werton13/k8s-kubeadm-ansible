@@ -1,0 +1,16 @@
+---
+- hosts: masters[0]
+  gather_facts: true
+  become: yes
+  vars_files:
+    - ../vars/base_vars.yaml
+  tasks:    
+    - name: cleanup local files
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "/home/{{ os_admin_username }}/k8s_addons/vcloud_csi/"
+        - /K8s-inventory
+        - /k8s-kubeadm-ansible/
+        - /root/ansible.log # uplouad it somewhere before delete
