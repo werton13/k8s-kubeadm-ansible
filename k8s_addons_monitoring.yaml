@@ -19,11 +19,23 @@
       loop:
         - grafana_values.yaml  # need to combine prometheus values in file
 
+    - name: Add prometheus community Helm repo
+      kubernetes.core.helm_repository:
+        name: prometheus-community
+        repo_url: "https://prometheus-community.github.io/helm-charts"
+
+    - name: Add Grafana community Helm repo
+      kubernetes.core.helm_repository:
+        name: grafana
+        repo_url: "https://grafana.github.io/helm-charts"
+      tags: grafana
+
     - name: Deploy latest version of Prometheus chart inside monitoring namespace (and create it)
       kubernetes.core.helm:
         name: prometheus
         chart_ref: prometheus-community/prometheus
         release_namespace: monitoring
+        kubeconfig: "/etc/kubernetes/admin.conf"
         create_namespace: true
         values:
           server:
@@ -31,13 +43,15 @@
               size: 10Gi 
           ingress:
             enabled: true
+      tags: prometheus
    
-   # Install Grafana
     - name: Deploy Grafana chart using values files on target
       kubernetes.core.helm:
         name: grafana
         chart_ref: grafana/grafana
         release_namespace: monitoring
+        kubeconfig: "/etc/kubernetes/admin.conf"
         values_files:
           - "/home/{{ os_admin_username }}/k8s_addons/monitoring/grafana_values.yaml"
+      tags: grafana_install
 ...

@@ -17,10 +17,22 @@
         dest: "/home/{{ os_admin_username }}/k8s_addons/metrics/metrics_server_values.yaml"
         mode: '0644'
 
+    - name: Add Kubernetes Metrics Server  Helm repo
+      kubernetes.core.helm_repository:
+        name: metrics-server
+        repo_url: "https://kubernetes-sigs.github.io/metrics-server"
+      tags: 
+        - metrics-server
+          metrics-repo
+
+
     - name: Deploy metrics server
       kubernetes.core.helm:
         name: metrics-server
         chart_ref: metrics-server/metrics-server
         release_namespace: kube-system
+        kubeconfig: "/etc/kubernetes/admin.conf"
         values_files:
           - "/home/{{ os_admin_username }}/k8s_addons/metrics/metrics_server_values.yaml"
+      tags:
+        - metrics-server

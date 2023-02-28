@@ -6,14 +6,10 @@
   vars_files:
     - ./vars/base_vars.yaml
   
+  roles:
+    - role: geerlingguy.helm
+
   tasks:
-#
-    #- name: Download the Google Cloud public signing key
-    #  ansible.builtin.get_url:
-    #    url: https://packages.cloud.google.com/apt/doc//apt-key.gpg
-    #    dest: /etc/apt/keyrings/kubernetes-archive-keyring.gpg 
-    #    mode: '0644'
-    #  tags: repoadd
 
     - name: Download the Google Cloud public signing key
       ansible.builtin.get_url:
@@ -41,7 +37,9 @@
       debug:
         msg: "{{ k8s_ver }}"
       tags: kube_bin_install
-      
+
+    - name: Download 
+
     - name: update apt
       ansible.builtin.apt:
         update_cache: yes
@@ -63,4 +61,5 @@
         - kubelet
         - kubeadm
         - kubectl
+
     

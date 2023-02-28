@@ -37,8 +37,8 @@ dashboards:
       datasource: 'Prometheus'
     kube-state-metrics-v2:
       gnetId: 13332
-        revision: 12
-        datasource: 'Prometheus'     
+      revision: 12
+      datasource: 'Prometheus'     
     prometheus-stats:
       gnetId: 2
       revision: 2
