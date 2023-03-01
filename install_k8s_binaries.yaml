@@ -3,10 +3,15 @@
   gather_facts: false
   become: yes
   tasks:
+    # helm version is currently hardcoded, managet through role variable 'helm_version'
     - name: Install collections and roles from requirements.yml file
       local_action: command ansible-galaxy install -r requirements.yml -p roles/
+      tags: helm_install
     - include_role:
         name: geerlingguy.helm
+      vars:
+        helm_version: 'v3.11.1'
+      tags: helm_install
   
 - hosts: masters:workers
   gather_facts: true
