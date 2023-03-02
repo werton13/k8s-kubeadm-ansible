@@ -1,0 +1,40 @@
+---
+- hosts: masters[0]
+  gather_facts: true
+  become: yes
+  vars_files:
+    - ./vars/base_vars.yaml
+  tasks:
+  # for futire customisation
+  #  - name: create folder for  ingress controller config file
+  #    file:
+  #      path: "/home/{{ os_admin_username }}/k8s_addons/ingress"
+  #      state: directory
+  #      mode: '0644'
+  #  
+  #  - name: copy metrics server config file
+  #    copy:
+  #      src: "./files/metrics_server_values.yaml"
+  #      dest: "/home/{{ os_admin_username }}/k8s_addons/ingress/ingress_controller_values.yaml"
+  #      mode: '0644'
+
+    - name: Add Ingress controller Server  Helm repo
+      kubernetes.core.helm_repository:
+        name: ingress-nginx
+        repo_url: "https://kubernetes.github.io/ingress-nginx"
+      tags: 
+        - ingress-repo
+        - ingress-controller
+
+
+    - name: Deploy Ingress controller
+      kubernetes.core.helm:
+        name: ingress-nginx
+        chart_ref: ingress-nginx/ingress-nginx
+        release_namespace: ingress-nginx
+        create_namespace: true
+        kubeconfig: "/etc/kubernetes/admin.conf"      
+#        values_files:
+#          - "/home/{{ os_admin_username }}/k8s_addons/ingress/ingress_controller_values.yaml"
+      tags:
+         - ingress-controller
