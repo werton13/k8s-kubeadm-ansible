@@ -37,13 +37,16 @@
         release_namespace: monitoring
         kubeconfig: "/etc/kubernetes/admin.conf"
         create_namespace: true
-        values:
-          server:
-            persistentVolume:
-              size: 10Gi 
-          ingress:
-            enabled: true
-      tags: prometheus
+        values_files:
+          - "/home/{{ os_admin_username }}/k8s_addons/monitoring/prometheus_values.yaml"
+        tags: prometheus
+    #    values:
+    #      server:
+    #        persistentVolume:
+    #          size: 10Gi 
+    #      ingress:
+    #        enabled: true
+
    
     - name: Deploy Grafana chart using values files on target
       kubernetes.core.helm:

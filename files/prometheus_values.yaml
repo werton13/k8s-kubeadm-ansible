@@ -1,0 +1,29 @@
+server:
+  persistentVolume:
+    size: 10Gi 
+ingress:
+  enabled: true
+  
+serverFiles:
+  alerting_rules.yml:
+    groups:
+     - name: K8s hardware alerts
+       rules:
+        - alert: Node Down
+          expr: up{job="kubernetes-nodes"} == 0
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            title: Node {{ $labels.instance }} is down
+            description: Failed to scrape {{ $labels.job }} on {{ $labels.instance }} for more than 1 minutes. Node seems down.
+     - name: K8s control plane alerts
+       rules:
+         - alert: API server down
+           expr: up{job="kubernetes-apiservers"} == 0
+           for: 30s
+           labels:
+             severity: page
+           annotations:
+             title: API server on {{ $labels.instance }} is down
+             description: Failed to scrape {{ $labels.job }} on {{ $labels.instance }} for more than 1 minutes. API server is unavailable

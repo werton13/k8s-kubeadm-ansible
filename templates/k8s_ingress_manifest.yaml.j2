@@ -37,3 +37,22 @@ spec:
         path: /
         pathType: Prefix
 ---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  creationTimestamp: null
+  name: ingress-alertmanager
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: alertmanager.{{ ingress_ext_fqdn }}
+    http:
+      paths:
+      - backend:
+          service:
+            name: "prometheus-alertmanager"
+            port:
+              number: 80
+        path: /
+        pathType: Prefix
+---
