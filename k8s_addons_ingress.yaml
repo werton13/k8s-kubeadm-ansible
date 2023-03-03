@@ -16,15 +16,15 @@
       template:
         src: ./templates/k8s_ingress_manifest.yaml.j2
         dest: "/home/{{ os_admin_username }}/k8s_addons/ingress/k8s_ingress_manifest.yaml"
-         mode: '0644'
+        mode: '0644'
 
-    - name: Apply Calico manifests
+    - name: Apply Ingress manifests
       kubernetes.core.k8s:
         kubeconfig: "/etc/kubernetes/admin.conf"
         state: present
         src: "{{ item }}"
       loop:
-        - "/home/{{ os_admin_username }}/k8s_addons/calico/tigera-operator.yaml"
-        - "/home/{{ os_admin_username }}/k8s_addons/calico/calico_config.yaml"
+        - "/home/{{ os_admin_username }}/k8s_addons/ingress/k8s_ingress_manifest.yaml"
+  
 
 
