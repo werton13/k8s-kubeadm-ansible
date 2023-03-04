@@ -17,7 +17,8 @@
         dest: "/home/{{ os_admin_username }}/k8s_addons/monitoring/{{ item }}"
         mode: '0644'
       loop:
-        - grafana_values.yaml  # need to combine prometheus values in file
+        - grafana_values.yaml
+        - prometheus_values.yaml  # need to combine prometheus values in file
 
     - name: Add prometheus community Helm repo
       kubernetes.core.helm_repository:
