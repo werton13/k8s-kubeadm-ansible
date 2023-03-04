@@ -11,10 +11,18 @@
         path: "/home/{{ os_admin_username }}/k8s_addons/calico"
         state: directory
         mode: '0644'
+
     - name: Download Calico tigera operator manifest
       ansible.builtin.get_url:
         url: "https://raw.githubusercontent.com/projectcalico/calico/{{ calico_version }}/manifests/tigera-operator.yaml"
         dest: "/home/{{ os_admin_username }}/k8s_addons/calico"
+        mode: '0644'
+      tags: calico
+    
+    - name: create Calico configuration manifest
+      template:
+        src: ./templates/calico_config.yaml.j2
+        dest: "/home/{{ os_admin_username }}/k8s_addons/calico/calico_config.yaml"
         mode: '0644'
       tags: calico
 
@@ -25,11 +33,6 @@
         mode: '0755'
       tags: calicoctl
 
-    - name: create Calico configuration manifest
-      template:
-        src: ./templates/calico_config.yaml.j2
-        dest: "/home/{{ os_admin_username }}/k8s_addons/calico/calico_config.yaml"
-        mode: 0644
 
     - name: Apply Calico manifests
       kubernetes.core.k8s:
