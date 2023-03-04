@@ -4,6 +4,7 @@ kind: Ingress
 metadata:
   creationTimestamp: null
   name: ingress-prometheus
+  namespace: monitoring
 spec:
   ingressClassName: nginx
   rules:
@@ -23,6 +24,7 @@ kind: Ingress
 metadata:
   creationTimestamp: null
   name: ingress-grafana
+  namespace: monitoring
 spec:
   ingressClassName: nginx
   rules:
@@ -42,6 +44,7 @@ kind: Ingress
 metadata:
   creationTimestamp: null
   name: ingress-alertmanager
+  namespace: monitoring
 spec:
   ingressClassName: nginx
   rules:
