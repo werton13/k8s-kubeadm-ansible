@@ -39,7 +39,7 @@
         create_namespace: true
         values_files:
           - "/home/{{ os_admin_username }}/k8s_addons/monitoring/prometheus_values.yaml"
-        tags: prometheus
+      tags: prometheus
     #    values:
     #      server:
     #        persistentVolume:
