@@ -11,25 +11,28 @@
         state: directory
         mode: '0644'
     
-    #- name: copy Prometheus and Grafana config files
-    #  copy:
-    #    src: "./files/{{ item }}"
-    #    dest: "/home/{{ os_admin_username }}/k8s_addons/monitoring/{{ item }}"
-    #    mode: '0644'
-    #  loop:
-    #    - grafana_values.yaml
-    #    - prometheus_values.yaml  # need to combine prometheus values in file
-
-    # try to template this:
-
     - name: copy Prometheus and Grafana config files
-      template:
-        src: "./templates/{{ item }}"
+      copy:
+        src: "./files/{{ item }}"
         dest: "/home/{{ os_admin_username }}/k8s_addons/monitoring/{{ item }}"
         mode: '0644'
       loop:
-        - grafana_values.yaml.j2
-        - prometheus_values.yaml.j2 
+        - grafana_values.yaml
+        - prometheus_values.yaml  
+
+    - name: create alertmanager config from template
+      template:
+        src: "./templates/alert_manager_config.yaml.j2"
+        dest: "/home/{{ os_admin_username }}/k8s_addons/monitoring/alert_manager_config.yaml"
+        mode: '0644'
+      tags: alert_mgr_config
+
+    - name: merge alertmanager config file with prometheus_values file
+      shell: |
+        cat "/home/{{ os_admin_username }}/k8s_addons/monitoring/prometheus_values.yaml" \
+        "/home/{{ os_admin_username }}/k8s_addons/monitoring/alert_manager_config.yaml" \
+        > "/home/{{ os_admin_username }}/k8s_addons/monitoring/prometheus_config.yaml"
+      tags: merge_prometheus_config
 
     - name: Add prometheus community Helm repo
       kubernetes.core.helm_repository:
@@ -50,7 +53,7 @@
         kubeconfig: "/etc/kubernetes/admin.conf"
         create_namespace: true
         values_files:
-          - "/home/{{ os_admin_username }}/k8s_addons/monitoring/prometheus_values.yaml"
+          - "/home/{{ os_admin_username }}/k8s_addons/monitoring/prometheus_config.yaml"
       tags: prometheus
     #    values:
     #      server:
