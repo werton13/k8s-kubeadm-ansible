@@ -9,12 +9,12 @@ alertmanager:
       routes:
         - match:
             severity: page
-          receiver: "{{ alertmgr_telegram_receiver_name }}"
+          receiver: {{ alertmgr_telegram_receiver_name }}
     receivers:
       - name: 'default'
-      - name: "{{ alertmgr_telegram_receiver_name }}"
+      - name: {{ alertmgr_telegram_receiver_name }}
         telegram_configs:
-          - bot_token: "{{ alertmgr_telegram_bot_token }}"
+          - bot_token: {{ alertmgr_telegram_bot_token }}
             api_url: https://api.telegram.org
-            chat_id: "{{ alertmgr_telegram_chatid }}"
+            chat_id: {{ alertmgr_telegram_chatid }}
             parse_mode: ''
