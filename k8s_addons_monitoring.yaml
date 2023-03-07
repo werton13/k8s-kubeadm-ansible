@@ -11,14 +11,25 @@
         state: directory
         mode: '0644'
     
+    #- name: copy Prometheus and Grafana config files
+    #  copy:
+    #    src: "./files/{{ item }}"
+    #    dest: "/home/{{ os_admin_username }}/k8s_addons/monitoring/{{ item }}"
+    #    mode: '0644'
+    #  loop:
+    #    - grafana_values.yaml
+    #    - prometheus_values.yaml  # need to combine prometheus values in file
+
+    # try to template this:
+
     - name: copy Prometheus and Grafana config files
-      copy:
-        src: "./files/{{ item }}"
+      template:
+        src: "./templates/{{ item }}"
         dest: "/home/{{ os_admin_username }}/k8s_addons/monitoring/{{ item }}"
         mode: '0644'
       loop:
-        - grafana_values.yaml
-        - prometheus_values.yaml  # need to combine prometheus values in file
+        - grafana_values.yaml.j2
+        - prometheus_values.yaml.j2 
 
     - name: Add prometheus community Helm repo
       kubernetes.core.helm_repository:
