@@ -18,6 +18,15 @@
         dest: "/home/{{ os_admin_username }}/k8s_addons/ingress/k8s_ingress_manifest.yaml"
         mode: '0644'
 
+    - name: Wait till Ingress controller deployment  replicas be greter than 0
+      shell: | 
+        sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf -n ingress-nginx get deployment ingress-nginx-controller -o jsonpath='{.status.availableReplicas}'  
+      register: ingress_replicas_available
+      until: ingress_replicas_available.stdout | int > 0
+      retries: 15
+      delay: 10
+      tags: wait_ingress
+
     - name: Apply Ingress manifests
       kubernetes.core.k8s:
         kubeconfig: "/etc/kubernetes/admin.conf"

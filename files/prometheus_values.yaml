@@ -5,6 +5,14 @@ ingress:
   enabled: true
   
 serverFiles:
+  prometheus.yml:
+    alerting:
+      alertmanagers:
+         - scheme: http
+           static_configs:
+           - targets:
+             - "alertmanager.monitoring.svc:9093"
+
   alerting_rules.yml:
     groups:
      - name: K8s hardware alerts
