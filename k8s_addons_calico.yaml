@@ -49,7 +49,7 @@
         state: present
         src: "/home/{{ os_admin_username }}/k8s_addons/calico/tigera-operator.yaml"
     
-    - name: Wait till Tigera operator replicas be greter than 0
+    - name: Wait till Tigera operator replicas be greater than 0
       shell: | 
         kubectl --kubeconfig=/etc/kubernetes/admin.conf -n tigera-operator get deployment tigera-operator -o jsonpath='{.status.availableReplicas}'
       register: tigera_replicas_available

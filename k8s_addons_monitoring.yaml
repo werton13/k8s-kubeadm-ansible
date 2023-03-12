@@ -63,6 +63,15 @@
     #        enabled: true
 
    
+    - name: Wait till Prometheus server  deployment  replicas be greater than 0
+      shell: | 
+        sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf -n monitoring get deployment prometheus-server -o jsonpath='{.status.availableReplicas}'  
+      register: prometheus_replicas_available
+      until: prometheus_replicas_available.stdout | int > 0
+      retries: 15
+      delay: 10
+      tags: wait_prometheus
+   
     - name: Deploy Grafana chart using values files on target
       kubernetes.core.helm:
         name: grafana
