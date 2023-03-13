@@ -68,7 +68,7 @@
         sudo kubectl --kubeconfig=/etc/kubernetes/admin.conf -n monitoring get deployment prometheus-server -o jsonpath='{.status.availableReplicas}'  
       register: prometheus_replicas_available
       until: prometheus_replicas_available.stdout | int > 0
-      retries: 15
+      retries: 50
       delay: 10
       tags: wait_prometheus
    
