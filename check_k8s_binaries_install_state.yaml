@@ -16,4 +16,4 @@
       register: k8s_binfile_state
       until: k8s_binfile_state.stat.exists == true
       retries: 100
-      delay: 10
+      delay: 15
