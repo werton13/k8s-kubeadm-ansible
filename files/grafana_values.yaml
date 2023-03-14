@@ -1,3 +1,11 @@
+tolerations:
+  - key: "servicegroup"
+    operator: "Equal"
+    value: "monitoring"
+    effect: "NoSchedule"
+nodeSelector:
+  servicegroup: monitoring
+  
 persistence:
   type: pvc
   enabled: true

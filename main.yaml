@@ -6,9 +6,13 @@
 - import_playbook: ./bootstrap_k8s_cluster.yaml
 - import_playbook: ./k8s_addons_calico.yaml
 - import_playbook: "./k8s_addons_{{ cloud_type }}_csi.yaml" #can be vcloud or vsphere
+# taint node for prometheus
+- import_playbook: ./categorize_nodes.yaml
 - import_playbook: ./k8s_addons_monitoring.yaml
 - import_playbook: ./k8s_addons_metrics.yaml
 - import_playbook: ./k8s_addons_ingress_controller.yaml
 - import_playbook: ./k8s_addons_ingress.yaml
+ # configure backup etcd task
+ # create RBAC components
 
 #- import_playbook: ./cleanup_finalize.yaml

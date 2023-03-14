@@ -1,4 +1,11 @@
 alertmanager:
+  tolerations:
+    - key: "servicegroup"
+      operator: "Equal"
+      value: "monitoring"
+      effect: "NoSchedule"
+  nodeSelector:
+    servicegroup: monitoring
   config:
     route:
       group_by: ['alertname', 'cluster', 'job', 'env']

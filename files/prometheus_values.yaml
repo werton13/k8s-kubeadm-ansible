@@ -1,6 +1,14 @@
 server:
   persistentVolume:
-    size: 10Gi 
+    size: 10Gi
+  tolerations:
+    - key: "servicegroup"
+      operator: "Equal"
+      value: "monitoring"
+      effect: "NoSchedule"
+  nodeSelector:
+    servicegroup: monitoring
+    
 ingress:
   enabled: true
 

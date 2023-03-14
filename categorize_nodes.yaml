@@ -1,0 +1,33 @@
+---
+
+- hosts: masters[0]
+  gather_facts: true
+  become: yes
+  vars_files:
+    - ./vars/base_vars.yaml
+  tasks:
+    # taint worker_node[0] for prometheus
+    - name: Taint node first worker node
+      kubernetes.core.k8s_taint:
+        state: present
+        name: "{{ worker0_name }}"
+        taints:
+        - effect: NoSchedule
+          key: "servicegroup"
+          value: "monitoring"
+    # label worker_node[0] for prometheus
+    - name: Label worker node as monitoring roles keeper
+      shell: |
+        kubectl --kubeconfig=/etc/kubernetes/admin.conf label node "{{ worker0_name }}" node-role.kubernetes.io/prometheus="" node-role.kubernetes.io/grafana=""
+    # drain standby nodes
+    - name: make two last worker nodes from inventory as unschedulable - make them standby
+      kubernetes.core.k8s_drain:
+        state: cordon
+        name: "{{ item }}"
+      loop: "{{ groups.workers[(workers_count|int -2):] }}"
+
+
+
+
+
+      
