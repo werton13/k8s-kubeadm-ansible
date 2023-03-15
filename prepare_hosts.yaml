@@ -6,15 +6,21 @@
   vars_files:
     - ./vars/base_vars.yaml
 
-  tasks:
-    - name: Wait 300 seconds for port 22 to become open on all nodes and contain "OpenSSH"
-      ansible.builtin.wait_for:
-        port: 22
-        host: '{{ (ansible_ssh_host|default(ansible_host))|default(inventory_hostname) }}'
-        search_regex: OpenSSH
+  pre_tasks:
+    - name: wait_for_connection 
+      wait_for_connection:
+        sleep: 5
         delay: 10
         timeout: 600
-      connection: local
+  #tasks:
+  #  - name: Wait 300 seconds for port 22 to become open on all nodes and contain "OpenSSH"
+  #    ansible.builtin.wait_for:
+  #      port: 22
+  #      host: '{{ (ansible_ssh_host|default(ansible_host))|default(inventory_hostname) }}'
+  #      search_regex: OpenSSH
+  #      delay: 10
+  #      timeout: 600
+  #    connection: local
     
     - name: check availability for log
       ansible.builtin.ping:
