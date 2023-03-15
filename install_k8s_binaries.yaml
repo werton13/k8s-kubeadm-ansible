@@ -1,5 +1,5 @@
 ---
-- hosts: masters
+- hosts: masters[0]
   gather_facts: false
   become: yes
   tasks:
