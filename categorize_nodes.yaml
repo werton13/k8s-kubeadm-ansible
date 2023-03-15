@@ -9,6 +9,7 @@
     # taint worker_node[0] for prometheus
     - name: Taint node first worker node
       kubernetes.core.k8s_taint:
+        kubeconfig: "/etc/kubernetes/admin.conf"
         state: present
         name: "{{ worker0_name }}"
         taints:
@@ -22,6 +23,7 @@
     # drain standby nodes
     - name: make two last worker nodes from inventory as unschedulable - make them standby
       kubernetes.core.k8s_drain:
+        kubeconfig: "/etc/kubernetes/admin.conf"
         state: cordon
         name: "{{ item }}"
       loop: "{{ groups.workers[(workers_count|int -2):] }}"
