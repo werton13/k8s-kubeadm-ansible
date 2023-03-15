@@ -20,14 +20,23 @@
     - name: Label worker node as monitoring roles keeper
       shell: |
         kubectl --kubeconfig=/etc/kubernetes/admin.conf label node "{{ worker0_name }}" node-role.kubernetes.io/prometheus="" node-role.kubernetes.io/grafana=""
-    # drain standby nodes
-    - name: make two last worker nodes from inventory as unschedulable - make them standby
+
+# make two last worker nodes from inventory as unschedulable - the goal is to dedicate standby nodes
+- hosts: workers[-2]:workers[-1] # I dont know how to make more compact host pattern -__-
+  gather_facts: true
+  become: yes
+  tasks:
+    - name: DRAIN two last nodes from workers group to make them "standby nodes"
       kubernetes.core.k8s_drain:
         kubeconfig: "/etc/kubernetes/admin.conf"
         state: cordon
-        name: "{{ item }}"
-      loop: "{{ groups.workers[(workers_count|int -2):] }}"
-
+        name: "{{ ansible_hostname }}"
+      delegate_to: "{{ groups.masters | first }}"
+    
+    - name: Label worker node as standby reserved
+      shell: |
+        kubectl --kubeconfig=/etc/kubernetes/admin.conf label node "{{ ansible_hostname }}" node-role.kubernetes.io/standby=""
+      delegate_to: "{{ groups.masters | first }}"
 
 
 
