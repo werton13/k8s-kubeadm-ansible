@@ -1,19 +1,27 @@
 ---
+
+- hosts: masters[0]
+  become: yes
+  vars_files:
+    - ./vars/base_vars.yaml
+
+  tasks:
+    - name: Waiting till all master and worker nodes be available via SSH, check each 10
+      wait_for:
+        host: "{{ item }}"
+        port: 22
+        sleep: 10
+        delay: 10
+        timeout: 600
+      loop: "{{ groups.masters[1:] + groups.workers }}"
+      connection: local
+
   
 - hosts: masters:workers
   gather_facts: true
   become: yes
   vars_files:
     - ./vars/base_vars.yaml
-
-  #pre_tasks:
-
-  tasks:
-    - name: wait_for_connection  # this check dont work
-      wait_for_connection:
-        sleep: 5
-        delay: 10
-        timeout: 600
       
     - name: check availability for log
       ansible.builtin.ping:
