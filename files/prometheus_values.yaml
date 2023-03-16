@@ -12,6 +12,24 @@ server:
 ingress:
   enabled: true
 
+kube-state-metrics:
+  tolerations:
+    - key: "servicegroup"
+      operator: "Equal"
+      value: "monitoring"
+      effect: "NoSchedule"
+  nodeSelector:
+    servicegroup: monitoring
+
+prometheus-pushgateway:
+  tolerations:
+    - key: "servicegroup"
+      operator: "Equal"
+      value: "monitoring"
+      effect: "NoSchedule"
+  nodeSelector:
+    servicegroup: monitoring
+
 serverFiles:
 
   alerting_rules.yml:
