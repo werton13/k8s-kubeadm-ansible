@@ -22,7 +22,8 @@
   become: yes
   vars_files:
     - ./vars/base_vars.yaml
-      
+  
+  tasks:    
     - name: check availability for log
       ansible.builtin.ping:
 
