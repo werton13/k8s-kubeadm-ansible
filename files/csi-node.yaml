@@ -45,6 +45,11 @@ spec:
       serviceAccount: csi-vcd-node-sa
       hostNetwork: true
       dnsPolicy: Default
+      tolerations:
+        - key: "servicegroup"
+          operator: "Equal"
+          value: "monitoring"
+          effect: "NoSchedule"
       containers:
         - name: node-driver-registrar
           image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.2.0

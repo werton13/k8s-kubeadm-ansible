@@ -19,7 +19,7 @@
     # label worker_node[0] for prometheus
     - name: Label worker node as monitoring roles keeper
       shell: |
-        kubectl --kubeconfig=/etc/kubernetes/admin.conf label node "{{ worker0_name }}" node-role.kubernetes.io/prometheus="" node-role.kubernetes.io/grafana=""
+        kubectl --kubeconfig=/etc/kubernetes/admin.conf label node "{{ worker0_name }}" node-role.kubernetes.io/prometheus="" node-role.kubernetes.io/grafana="" servicegroup=monitoring 
 
 # make two last worker nodes from inventory as unschedulable - the goal is to dedicate standby nodes
 - hosts: workers[-2]:workers[-1] # I dont know how to make more compact host pattern -__-
