@@ -1,0 +1,32 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+name: tenant-node-drainer
+rules:
+## Needed to evict pods
+- apiGroups: [""]
+resources: ["pods/eviction"]
+verbs: ["create"]
+# Needed to list pods by Node
+- apiGroups: [""]
+resources: ["pods"]
+verbs: ["get", "list"]
+## Needed to cordon Nodes. Exclude master-node
+- apiGroups: [""]
+resources: ["nodes"]
+resourceNames:
+[
+{% for host in groups['workers'][:-1] %}
+"{{ hostvars[host]['ansible_hostname'] }}",
+{% endfor %}
+"{{ hostvars[groups.workers[-1]]['ansible_hostname'] }}"
+]
+verbs: ["get", "patch"]
+# Needed to determine Pod owners
+- apiGroups: ["apps"]
+resources: ["statefulsets"]
+verbs: ["get", "list"]
+# Needed to determine Pod owners
+- apiGroups: ["extensions"]
+resources: ["daemonsets", "replicasets"]
+verbs: ["get", "list"]

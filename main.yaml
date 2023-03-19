@@ -1,4 +1,4 @@
-
+# prepare storage subsystem LVM volumes, mount points, e.t.c.
 - import_playbook: ./prepare_hosts.yaml
 - import_playbook: ./install_k8s_binaries.yaml
 # не приступать к развертыванию кластера до получения статусу готовности всех узлов
@@ -12,6 +12,7 @@
 - import_playbook: ./k8s_addons_metrics.yaml
 - import_playbook: ./k8s_addons_ingress_controller.yaml
 - import_playbook: ./k8s_addons_ingress.yaml
+- import_playbook: ./k8s_rbac_configure.yaml
  # configure backup etcd task
  # create RBAC components
 

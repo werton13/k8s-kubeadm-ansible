@@ -1,0 +1,45 @@
+---
+- hosts: masters[0]
+  gather_facts: true
+  become: yes
+  vars_files:
+    - ./vars/base_vars.yaml
+  tasks:
+    - name: create folder for CSR and SSL certs
+      file:
+        path: "/home/{{ os_admin_username }}/k8s_addons/pki"
+        state: directory
+        mode: '0644'
+    
+    - name: create private keys for tenant K8s users
+      openssl_privatekey:
+        path: "/home/{{ os_admin_username }}/k8s_addons/pki/{{ tenant_k8s_admin_username }}-key.pem"
+        size: 2048
+        type: "RSA"
+        backup: yes
+
+    - name: create CSR for tenant K8s users
+      openssl_csr:
+        path: "/home/{{ os_admin_username }}/k8s_addons/pki/{{ tenant_k8s_admin_username }}.csr"
+        privatekey_path: "/home/{{ os_admin_username }}/k8s_addons/pki/{{ tenant_k8s_admin_username }}-key.pem"
+        country_name: RU
+        organization_name: "{{ tenant_orgname }}"
+        organizational_unit_name: "{{ tenant_orgname_orgunit }}"
+        email_address: "{{ tenant_emailaddress }}"
+        common_name: "{{ tenant_k8s_admin_username }}"
+#        basic_constraints: "{{ item.value.basic_constraints | default([]) }}" 
+        key_usage:
+               - "keyEncipherment"
+               - "digitalSignature"
+        extended_key_usage: "clientAuth"
+#        subject_alt_name: "{{ item.value.SAN | default([]) }}" 
+        use_common_name_for_san: true
+
+    - name: Generate an CA signed OpenSSL certificates for  tenant users
+      openssl_certificate:
+        path: "/home/{{ os_admin_username }}/k8s_addons/pki/{{ tenant_k8s_admin_username }}.pem"
+        csr_path: "/home/{{ os_admin_username }}/k8s_addons/pki/{{ tenant_k8s_admin_username }}.csr"
+        ownca_path: /etc/kubernetes/pki/ca.crt
+        ownca_privatekey_path: /etc/kubernetes/pki/ca.key
+        ownca_not_after: "+{{ certificate_validity  }}d"
+        provider: ownca 
