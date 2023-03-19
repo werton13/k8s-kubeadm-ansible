@@ -1,4 +1,10 @@
 ---
+# create tenant admin user certificate
+- import_playbook: ./k8s_rbac_prepare_certs.yaml
+
+# create tenant admin kubeconfig files
+- import_playbook: ./k8s_rbac_prepare_kubeconfigs.yaml
+
 - hosts: masters[0]
   gather_facts: true
   become: yes
@@ -52,9 +58,6 @@
         - k8s_tenant_clusterrole_binding.yaml # bind custom  ClusterRole to tenantadmin user on the cluster level
         - k8s_tenant_role_binding.yaml        # bind default Admin ClusterRole to tenantadmin user on the Tenant namespace level
 
-    # create tenant admin user certificate
-    - import_playbook: ./k8s_rbac_prepare_certs.yaml
-
     - name: apply K8s roles manifests for a tenant
       kubernetes.core.k8s:
         kubeconfig: "/etc/kubernetes/admin.conf"
@@ -73,8 +76,7 @@
         - "/home/{{ os_admin_username }}/k8s_addons/rbac/k8s_tenant_clusterrole_binding.yaml"
         - "/home/{{ os_admin_username }}/k8s_addons/rbac/k8s_tenant_role_binding.yaml"
      
-     # create tenant admin kubeconfig files
-    - import_playbook: ./k8s_rbac_prepare_kubeconfigs.yaml
+
   
 
 
