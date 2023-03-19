@@ -74,7 +74,7 @@
         - "/home/{{ os_admin_username }}/k8s_addons/rbac/k8s_tenant_role_binding.yaml"
      
      # create tenant admin kubeconfig files
-     - import_playbook: ./k8s_rbac_prepare_kubeconfigs.yaml
+    - import_playbook: ./k8s_rbac_prepare_kubeconfigs.yaml
   
 
 
