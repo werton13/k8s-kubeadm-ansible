@@ -1,0 +1,28 @@
+# code: language=ansible
+---
+- name: "Configure LVMs, FSes and mount them"
+  hosts: masters:workers # for sure all hosts
+  become: yes
+  vars:
+    configure_lvm_and_fs_storages:
+      - disk: sdb
+        vg_name: data1_vg
+        lvm_name: data1_lv
+        fs_type: ext4
+        mount_path: /data1
+      - disk: sdc
+        vg_name: data2_vg
+        lvm_name: data2_lv
+        fs_type: ext4
+        mount_path: /data2
+    move_system_dir_config:
+      - source: /var
+        dest: /data1
+        excludes:
+          - /lib
+          - /snap
+      - source: /var/lib
+        dest: /data2
+  roles:
+    - configure_lvm_and_fs
+    - move_system_dir
