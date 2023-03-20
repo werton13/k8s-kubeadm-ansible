@@ -1,5 +1,24 @@
 # code: language=ansible
 ---
+- hosts: masters:workers
+  become: false
+  gather_facts: false
+  tasks:
+    - name: Check all hosts contain /dev/sdb, /dev/sdc
+      ansible.builtin.stat:
+        path: "{{ item}}"
+      loop:
+        - /dev/sdb
+        - /dev/sdc
+      register: st
+      until: st.stat.exists == true
+      retries: 150
+      delay: 10
+
+    - name: Fail if the file does not belong to 'root'
+      debug:
+        msg: "Assuming all additional disks attached to vms"
+
 - name: "Configure LVMs, FSes and mount them"
   hosts: masters:workers # for sure all hosts
   become: yes
