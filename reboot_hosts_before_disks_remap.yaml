@@ -1,0 +1,46 @@
+# code: language=ansible
+---
+- hosts: masters[1:]:workers
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Waiting till all master and worker nodes be available via SSH, check each 10
+      wait_for:
+        host: "{{ item }}"
+        port: 22
+        sleep: 10
+        delay: 10
+        timeout: 600
+      loop: "{{ groups.masters[1:] + groups.workers }}"
+      connection: local
+
+    - name: Check all hosts contain /dev/sdb, /dev/sdc
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - /dev/sdb
+        - /dev/sdc
+      register: st
+      until: st.stat.exists == true
+      retries: 200
+      delay: 10
+    
+    - name: restart all nodes to ensure correct disks labels order
+      ansible.builtin.reboot:
+    
+    - name: Waiting till all master and worker nodes be available via SSH, check each 10
+      wait_for:
+        host: "{{ item }}"
+        port: 22
+        sleep: 10
+        delay: 10
+        timeout: 600
+      loop: "{{ groups.masters[1:] + groups.workers }}"
+      connection: local
+
+- hosts: masters[0]
+  become: true
+  gather_facts: false
+  tasks:
+    - name: restarting master node (this host)
+      ansible.builtin.reboot:
