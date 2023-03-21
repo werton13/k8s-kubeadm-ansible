@@ -1,6 +1,7 @@
 # code: language=ansible
 ---
-- hosts: masters:workers
+# run on all hosts except first master - which is control node, need to add additional task to process first master 
+- hosts: masters[1:]:workers
   become: false
   gather_facts: false
   tasks:
@@ -18,9 +19,9 @@
     - name: All disks checks passed, starting configure volumes
       debug:
         msg: "Assuming all additional disks attached to vms"
-
+# run on all hosts except first master - which is control node, need to add additional task to process first master 
 - name: "Configure LVMs, FSes and mount them"
-  hosts: masters:workers # for sure all hosts
+  hosts: masters[1:]:workers 
   become: yes
   vars:
     configure_lvm_and_fs_storages:
