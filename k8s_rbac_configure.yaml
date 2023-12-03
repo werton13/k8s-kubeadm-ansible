@@ -57,6 +57,7 @@
       loop:
         - k8s_tenant_clusterrole_binding.yaml # bind custom  ClusterRole to tenantadmin user on the cluster level
         - k8s_tenant_role_binding.yaml        # bind default Admin ClusterRole to tenantadmin user on the Tenant namespace level
+        - k8s_tenant_clusterrole_nd_binding.yaml
 
     - name: apply K8s roles manifests for a tenant
       kubernetes.core.k8s:
@@ -67,6 +68,7 @@
         - "/home/{{ os_admin_username }}/k8s_addons/rbac/k8s_tenant_ro_clusterrole.yaml"
         - "/home/{{ os_admin_username }}/k8s_addons/rbac/k8s_tenant_node_drain_clusterrole.yaml"
     
+    # here we need to create 3 role assignment's - two for our custom roles and one for a builtin Admin
     - name: apply ClusterRoleBinding's and RoleBindings manifests
       kubernetes.core.k8s:
         kubeconfig: "/etc/kubernetes/admin.conf"
@@ -75,6 +77,7 @@
       loop:
         - "/home/{{ os_admin_username }}/k8s_addons/rbac/k8s_tenant_clusterrole_binding.yaml"
         - "/home/{{ os_admin_username }}/k8s_addons/rbac/k8s_tenant_role_binding.yaml"
+        - "/home/{{ os_admin_username }}/k8s_addons/rbac/k8s_tenant_clusterrole_nd_binding.yaml"
      
 
   

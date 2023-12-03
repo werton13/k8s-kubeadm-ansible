@@ -23,14 +23,16 @@
 
     - name: Download the Google Cloud public signing key
       ansible.builtin.get_url:
-        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        url: https://dl.k8s.io/apt/doc/apt-key.gpg
         dest: /etc/apt/keyrings/kubernetes-archive-keyring.gpg 
         mode: '0644'
       register: dnl_state
       until: dnl_state.failed == false
       retries: 100
       delay: 10
-      tags: repoad        
+      tags: 
+        - repoadd
+        - gpg_key        
     
     #
     - name: Add the Kubernetes apt repository
@@ -41,6 +43,7 @@
         update_cache: true
       tags:
         - repoadd
+        - kube_repo
     
     #echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
     - name: debug k8s_ver variable
