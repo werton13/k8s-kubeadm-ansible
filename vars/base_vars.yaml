@@ -3,7 +3,7 @@ k8s_nic_name: "ansible_{{ os_nic1_name }}"
 HOST_IP: "{{ hostvars[inventory_hostname][k8s_nic_name].ipv4.address }}"
 calico_ippools_cidr: "{{ k8s_pod_subnet }}"
 
-vsphere_cpi_url:  "https://raw.githubusercontent.com/kubernetes/cloud-provider-vsphere/release-{{ k8s_version_short[1:-2] }}/releases/v{{ k8s_version_short[1:-2] }}/vsphere-cloud-controller-manager.yaml"
+vsphere_cpi_url:  "https://raw.githubusercontent.com/kubernetes/cloud-provider-vsphere/release-{{ k8s_version_short[0:-2] }}/releases/v{{ k8s_version_short[0:-2] }}/vsphere-cloud-controller-manager.yaml"
 vsphere_csi_manifest_url: "https://raw.githubusercontent.com/kubernetes-sigs/vsphere-csi-driver/{{ vsphere_csi_driver_version }}/manifests/vanilla/vsphere-csi-driver.yaml"
 
 
